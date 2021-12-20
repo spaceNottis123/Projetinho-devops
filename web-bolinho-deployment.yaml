@@ -1,0 +1,64 @@
+##### CRIAR POD BOLINHO
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: marvel
+  name: api-pod
+  labels:
+    app: api-pod
+spec:
+  containers:
+    - name: api-app
+      image: enzoftrevisan/books-py-api:bolinho
+      imagePullPolicy: Always
+
+---
+### CRIAR POD NGINX
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: marvel
+  name: nginx-pod
+  labels:
+    app: nginx-pod
+spec:
+  containers:
+    - name: nginx-app
+      image: nginx
+      imagePullPolicy: Always
+
+---
+### CRIAR SERVICO 
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: marvel
+  name: miojo
+spec:
+  type: NodePort
+  selector:
+    app: api-pod
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 5000
+
+---
+### CRIAR INGRESS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /app
+        pathType: Prefix
+        backend:
+          service:
+            name: miojo
+            port:
+              number: 5000
